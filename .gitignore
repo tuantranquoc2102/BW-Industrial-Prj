@@ -1,0 +1,32 @@
+# macOS system file
+.DS_Store
+
+# Python virtual environment
+.venv/
+
+# Data folder (bỏ qua toàn bộ nội dung trong data/)
+data/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/
+
+# Log and temp files
+*.log
+*.tmp
+*.bak
+
+# OS-generated files
+Thumbs.db
+Desktop.ini
