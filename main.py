@@ -4,8 +4,8 @@ from src.comparator import compare_trends, compare_trends_named
 from src.writer import write_summary_full_trends
 import pandas as pd
 import re
-from src.rules.depreciation_trend_rule import DepreciationTrendRule
-from src.rules.loan_interest_trend_rule import LoanInterestTrendRule
+from src.rules.investment_properties import DepreciationTrendRule
+from src.rules.loan_balance import LoanInterestTrendRule
 
 
 file_path = "data/DAL_May'25_example.xlsx"  # 🔁 Cập nhật đường dẫn nếu khác
