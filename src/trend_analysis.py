@@ -8,9 +8,9 @@ def get_trends(series):
     trends = []
     for i in range(1, len(values)):
         if values[i] > values[i - 1]:
-            trends.append("Tăng")
+            trends.append("↑")
         elif values[i] < values[i - 1]:
-            trends.append("Giảm")
+            trends.append("↓")
         else:
             trends.append("Giữ nguyên")
     return trends
@@ -22,10 +22,10 @@ def get_trends_with_headers(series, month_headers):
     trends = []
     for i in range(1, len(values)):
         if values[i] > values[i - 1]:
-            trends.append("Tăng")
+            trends.append("↑")
         elif values[i] < values[i - 1]:
-            trends.append("Giảm")
+            trends.append("↓")
         else:
-            trends.append("Giữ")
+            trends.append("→")
     print(f"📈 Xu hướng: {trends}")
     return trends, month_headers[1:]
