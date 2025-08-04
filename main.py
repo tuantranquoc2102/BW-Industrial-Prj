@@ -1,19 +1,27 @@
-from src.reader import extract_data, extract_loan_data
-from src.trend_analysis import get_trends, to_numeric, get_trends_with_headers
-from src.comparator import compare_trends, compare_trends_named
-from src.writer import write_summary_full_trends
-import pandas as pd
+import os
 import re
-from src.rules.investment_properties import DepreciationTrendRule
+import pandas as pd
+# from src.reader import extract_data, extract_loan_data
+from src.trend_analysis import to_numeric, get_trends_with_headers
+from src.comparator import compare_trends, compare_trends_named
+# from src.writer import write_summary_full_trends
+from src.rules.investmentPropertiesDepreciationTrend import investmentPropertiesDepreciationRule
 from src.rules.loan_balance import LoanInterestTrendRule
 
 
-file_path = "data/DAL_May'25_example.xlsx"  # 🔁 Cập nhật đường dẫn nếu khác
+if __name__ == '__main__':
+    base_dir = os.getcwd()  # thư mục hiện tại
+    rule_dir = os.path.join(base_dir, "rules", "Investment_Properties_Depreciation_Trend")
 
-rule1 = DepreciationTrendRule(file_path)
-rule1.run()
+    # Khởi tạo rule
+    rule = investmentPropertiesDepreciationRule(
+        data_dir=os.path.join(base_dir, "data"),
+        rule_dir=rule_dir
+    )
+    rule.run()
 
-rule2 = LoanInterestTrendRule(file_path)
-rule2.run()
-
-print("✅ Đã xử lý và ghi kết quả vào sheet 'Summary Report'")
+    # rule = LoanInterestTrendRule(
+    #     data_dir='data',
+    #     rule_dir='rules/Loan Balance Interest Trend'
+    # )
+    # rule.run()
