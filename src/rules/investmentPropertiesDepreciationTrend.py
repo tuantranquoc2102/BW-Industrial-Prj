@@ -3,7 +3,7 @@ import pandas as pd
 from src.utils.date_util import DateUtil
 from src.trend_analysis import get_trends_with_headers
 from src.comparator import compare_trends_named
-from src.writer import write_summary_full_trends
+from src.writer import write_summary_full_trends_filtered
 from src.conf.config import SHEET_BS, SHEET_PL
 
 class investmentPropertiesDepreciationRule:
@@ -63,16 +63,16 @@ class investmentPropertiesDepreciationRule:
         pl_trend, _ = get_trends_with_headers(pl_values, month_headers)
 
         # Ghi kết quả
-        write_summary_full_trends(
+        write_summary_full_trends_filtered(
             file_path,
             trend1=bs_trend,
             trend2=pl_trend,
             months=months,
             rule_name=f"Rule: {sub_rule_name}",
             label1="BS Trend",
-            label2="PL Trend"
+            label2="PL Trend",
+            month_filter_path="src/conf/month_filter.xlsx"  # đường dẫn file filter
         )
-
 
     def run(self):
         for file_name in os.listdir(self.data_dir):

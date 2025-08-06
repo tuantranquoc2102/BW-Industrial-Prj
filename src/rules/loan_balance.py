@@ -2,7 +2,7 @@ import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
 from src.utils.date_util import DateUtil
 from src.trend_analysis import get_trends_with_headers
-from src.writer import write_summary_full_trends
+from src.writer import write_summary_full_trends_filtered
 from src.conf.config import SHEET_BS, SHEET_PL
 
 
@@ -47,15 +47,17 @@ class LoanInterestTrendRule:
         self.interest_trend, _ = get_trends_with_headers(self.interest_expense_values, self.month_headers)
 
     def compare_and_write(self):
-        write_summary_full_trends(
+        write_summary_full_trends_filtered(
             self.file_path,
             trend1=self.loan_trend,
             trend2=self.interest_trend,
             months=self.months,
             rule_name="Rule 2: Loan Balance vs. Interest Expense Trend",
             label1="Loan Balance Trend",
-            label2="Interest Expense Trend"
+            label2="Interest Expense Trend",
+            month_filter_path="src/conf/month_filter.xlsx"  # đường dẫn file filter
         )
+       
 
     def run(self):
         self.extract_values()

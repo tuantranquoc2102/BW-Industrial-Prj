@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
@@ -5,78 +6,31 @@ from calendar import month_abbr
 from openpyxl.styles import PatternFill, Alignment, Font
 
 
-# def write_summary_full_trends(file_path, trend1, trend2, months, rule_name="Rule", label1="BS trend", label2="PL trend"):
+def read_months_to_show(file_path):
+    df = pd.read_excel(file_path)
+    return df['months_to_show'].dropna().astype(int).tolist()
 
-#     # Rule row + 2 dòng trend
-#     header_row = [rule_name] + months
-#     row1 = [label1] + trend1
-#     row2 = [label2] + trend2
+def write_summary_full_trends_filtered(
+    file_path, trend1, trend2, months, month_filter_path,
+    rule_name="Rule", label1="BS trend", label2="PL trend"
+):
+    # Đọc các tháng cần hiển thị từ file
+    months_to_show = read_months_to_show(month_filter_path)
 
-#     # Load workbook
-#     book = load_workbook(file_path)
+    # Lọc các tháng và xu hướng tương ứng
+    filtered_months = []
+    filtered_trend1 = []
+    filtered_trend2 = []
 
-#     # Xác định vị trí bắt đầu
-#     #---TH mà đã có sheet "Anomalies Summary" thì start_row = max_row + 2
-#     if "Anomalies Summary" in book.sheetnames:
-#         sheet = book["Anomalies Summary"]
-#         start_row = sheet.max_row + 2
-#     #---TH mà chưa có sheet "Anomalies Summary" thì start_row = 1
-#     else:
-#         sheet = book.create_sheet("Anomalies Summary")
-#         start_row = 1
+    for i, m in enumerate(months):
+        if (i + 1) in months_to_show:
+            filtered_months.append(m)
+            filtered_trend1.append(trend1[i])
+            filtered_trend2.append(trend2[i])
 
-#     # Colors
-#     diff_fill = PatternFill(start_color="FFCCCB", end_color="FFCCCB", fill_type="solid")  # Light red
-
-
-
-#     # # Ghi các dòng header_row, trend1, trend2
-#     # rows = [header_row, row1, row2]
-#     # for row_offset, row_data in enumerate(rows, start=1):
-#     #     for col_idx, val in enumerate(row_data, start=1):
-#     #         cell = sheet.cell(row=start_row + row_offset, column=col_idx, value=val)
-
-#     #         # Canh giữa nội dung trong ô
-#     #         cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#     #         # Tô màu khác biệt (chỉ từ cột thứ 2 trở đi)
-#     #         if row_offset in [1, 2] and col_idx > 1:
-#     #             idx = col_idx - 2
-#     #             if idx < len(trend1) and trend1[idx] != trend2[idx]:
-#     #                 cell.fill = diff_fill
-
-#     # Ghi header
-#     for col_idx, val in enumerate(header_row, start=1):
-#         cell = sheet.cell(row=start_row, column=col_idx, value=val)
-#         cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#     # Ghi BS trend & PL trend + tô màu nếu khác nhau
-#     for col_idx in range(1, len(months) + 2):  # +2 vì cột 1 là label
-#         # Ghi BS trend
-#         bs_cell = sheet.cell(row=start_row + 1, column=col_idx,
-#                              value=row1[col_idx - 1])
-#         bs_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#         # Ghi PL trend
-#         pl_cell = sheet.cell(row=start_row + 2, column=col_idx,
-#                              value=row2[col_idx - 1])
-#         pl_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#         # So sánh trend (bỏ cột label)
-#         if col_idx > 1:
-#             idx = col_idx - 2
-#             if idx < len(trend1) and trend1[idx] != trend2[idx]:
-#                 bs_cell.fill = diff_fill
-#                 pl_cell.fill = diff_fill
-
-#     # Lưu file
-#     book.save(file_path)
-
-def write_summary_full_trends(file_path, trend1, trend2, months, rule_name="Rule", label1="BS trend", label2="PL trend"):
-    # Rule row + 2 dòng trend
-    header_row = [rule_name] + months
-    row1 = [label1] + trend1
-    row2 = [label2] + trend2
+    if not filtered_months:
+        print("⚠️ Không có tháng nào khớp với bộ lọc.")
+        return
 
     # Load workbook
     book = load_workbook(file_path)
@@ -89,21 +43,38 @@ def write_summary_full_trends(file_path, trend1, trend2, months, rule_name="Rule
 
     # Highlight styles
     diff_fill = PatternFill(start_color="FFFFCCCB", end_color="FFFFCCCB", fill_type="solid")
-    red_font = Font(color="FF0000")  # Red text
+    red_font = Font(color="FF0000")
 
-    # Ghi các dòng header_row, trend1, trend2
-    rows = [header_row, row1, row2]
-    for row_offset, row_data in enumerate(rows, start=1):
+    # Header và dữ liệu
+    header_row = [rule_name] + filtered_months + ["Remark"]
+    row1 = [label1] + filtered_trend1 + [""]
+    row2 = [label2] + filtered_trend2 + [""]
+
+    # Tạo Remark cho sự khác biệt >5%
+    remark_lines = []
+    remark_text = ""
+    for i in range(len(filtered_trend1)):
+        t1 = filtered_trend1[i]
+        t2 = filtered_trend2[i]
+        print(f"Month {i + 1}: {t1} vs {t2}")
+
+        if t1 != t2 and ("↑ >5%" in [t1, t2] or "↓ >5%" in [t1, t2] or "0" in [t1, t2]):
+            month_num = i + 1
+            remark_lines.append(f"Month {month_num}: Check BS vs PL trend")
+
+    remark_text = "\n".join(remark_lines)
+    row2[-1] = remark_text
+
+    for row_offset, row_data in enumerate([header_row, row1, row2], start=1):
         for col_idx, val in enumerate(row_data, start=1):
             cell = sheet.cell(row=start_row + row_offset, column=col_idx, value=val)
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-            # Tô màu khác biệt nếu là dòng trend1 hoặc trend2 (offset 2 hoặc 3) và từ cột 2 trở đi
+            # Tô màu nếu trend khác nhau
             if row_offset in [2, 3] and col_idx > 1:
                 idx = col_idx - 2
-                if idx < len(trend1) and trend1[idx] != trend2[idx]:
+                if idx < len(filtered_trend1) and filtered_trend1[idx] != filtered_trend2[idx]:
                     cell.fill = diff_fill
-                    cell.font = red_font  # tô màu chữ để dễ thấy
+                    cell.font = red_font
 
-    # Lưu file
     book.save(file_path)
