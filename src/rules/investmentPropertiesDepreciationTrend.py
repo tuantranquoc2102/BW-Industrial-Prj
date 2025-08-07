@@ -41,8 +41,9 @@ class investmentPropertiesDepreciationRule:
         # Lấy tiêu đề tháng
         raw_month_headers = bs_df.iloc[7, 4:16].tolist()
         month_headers = DateUtil.clean_month_list(raw_month_headers, fmt="long")
-        months = month_headers[1:]  # Bỏ tháng đầu tiên
-
+        #months = month_headers[1:]  # Bỏ tháng đầu tiên
+        months = month_headers
+        
         # Đọc tài khoản
         bs_accounts = self.read_account_list(bs_file)
         pl_accounts = self.read_account_list(pl_file)
